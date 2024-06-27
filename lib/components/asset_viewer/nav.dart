@@ -5,9 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:intl/intl.dart';
 import 'package:kaiga/main.dart';
 import 'package:kaiga/manager/format_bytes.dart';
+import 'package:material_symbols_icons/symbols.dart';
 
 class AssetViewerNav extends StatefulWidget {
-  final KaigaAsset asset;
+  final ValueNotifier<KaigaAsset?> asset;
   const AssetViewerNav(this.asset, {super.key});
 
   @override
@@ -20,54 +21,67 @@ class AssetViewerNavState extends State<AssetViewerNav> {
 
   final manager = KaigaManager();
 
-  KaigaAsset get asset => widget.asset;
+  ValueNotifier<KaigaAsset?> get currentAsset => widget.asset;
+
+  KaigaAsset? asset;
   FileStat? stat;
 
   @override
   void initState() {
     super.initState();
+    currentAsset.addListener(init);
     init();
   }
 
   @override
   void dispose() {
+    currentAsset.removeListener(init);
     reset();
     super.dispose();
   }
 
   reset() {
-    asset.assetFile.stat.removeListener(initStat);
+    setAsset(null);
+    setStat(null);
+    currentAsset.value?.assetFile.stat.removeListener(initStat);
   }
 
   init() {
     reset();
-    asset.assetFile.stat.addListener(initStat);
+    if (currentAsset.value == null) return;
+    setAsset(currentAsset.value!);
+    currentAsset.value!.assetFile.stat.addListener(initStat);
     initStat();
   }
 
   initStat() {
     if (!mounted) return;
-    setStat(null);
-    final item = asset.assetFile.stat.value;
+    final item = currentAsset.value!.assetFile.stat.value;
     if (item == null) return;
     setStat(item);
   }
 
+  void setAsset(KaigaAsset? asset) => setState(() => this.asset = asset);
   void setStat(FileStat? stat) => setState(() => this.stat = stat);
 
   @override
-  Widget build(BuildContext context) => BlurView(
-      child: Container(
+  Widget build(BuildContext context) =>
+      asset != null ? mainView : const SizedBox();
+
+  Widget get mainView => BlurView(
+        child: Container(
           padding: EdgeInsets.only(top: top, left: 20, right: 20, bottom: 20),
           color: CupertinoColors.black.withOpacity(0.7),
-          child: stat != null
+          child: asset != null && stat != null
               ? Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [titleView(stat!)],
+                  children: [titleView(asset!, stat!), refreshView],
                 )
-              : loadingView));
+              : loadingView,
+        ),
+      );
 
-  Widget titleView(FileStat stat) {
+  Widget titleView(KaigaAsset asset, FileStat stat) {
     titleText(String text, int minSize, int size,
             {double opacity = 1.0, FontWeight weight = FontWeight.normal}) =>
         AutoSizeText(
@@ -82,7 +96,7 @@ class AssetViewerNavState extends State<AssetViewerNav> {
     final dimensions = '${asset.entity.width}x${asset.entity.height}';
 
     final size = stat.size;
-    final date = stat.changed;
+    final date = asset.entity.createDateTime;
 
     // June 23, 2021
     // 6:00 PM
@@ -107,4 +121,13 @@ class AssetViewerNavState extends State<AssetViewerNav> {
   }
 
   Widget get loadingView => const Center(child: CupertinoActivityIndicator());
+
+  Widget get refreshView => ButtonView(
+        const Icon(
+          Symbols.refresh_rounded,
+          color: CupertinoColors.white,
+          size: 30,
+        ),
+        onPressed: manager.init,
+      );
 }

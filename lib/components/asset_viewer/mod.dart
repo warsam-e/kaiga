@@ -1,18 +1,17 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:kaiga/main.dart';
-import 'package:kaiga/manager/mod.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:volume_controller/volume_controller.dart';
-import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 export 'nav.dart';
 export 'footer.dart';
-export 'filter.dart';
 
 class AssetViewer extends StatefulWidget {
-  final KaigaAsset asset;
+  final ValueNotifier<KaigaAsset?> asset;
   const AssetViewer(this.asset, {super.key});
 
   @override
@@ -20,9 +19,12 @@ class AssetViewer extends StatefulWidget {
 }
 
 class AssetViewerState extends State<AssetViewer> {
-  KaigaAsset get asset => widget.asset;
+  ValueNotifier<KaigaAsset?> get currentAsset => widget.asset;
 
+  KaigaAsset? asset;
   File? file;
+
+  Timer? playTimer;
 
   VideoPlayerController? controller;
 
@@ -31,35 +33,40 @@ class AssetViewerState extends State<AssetViewer> {
   @override
   void initState() {
     super.initState();
-    if (asset.isVideo) init();
+    currentAsset.addListener(init);
+    init();
   }
 
   @override
   void dispose() {
+    currentAsset.removeListener(init);
     reset();
     super.dispose();
   }
 
   reset() {
-    asset.assetFile.file.removeListener(initFile);
-    file = null;
+    playTimer?.cancel();
     controller?.dispose();
     controller = null;
+    setAsset(null);
+    setFile(null);
+    currentAsset.value?.assetFile.file.removeListener(initFile);
   }
 
   init() async {
     reset();
-    asset.assetFile.file.addListener(initFile);
+    if (currentAsset.value == null) return;
+    setAsset(currentAsset.value!);
+    if (!asset!.isVideo) return;
+    currentAsset.value?.assetFile.file.addListener(initFile);
     initFile();
   }
 
   initFile() {
-    final item = asset.assetFile.file.value;
+    final item = asset!.assetFile.file.value;
     if (item == null) return;
-    setState(() {
-      file = item;
-    });
-    initVideo(asset);
+    setFile(item);
+    initVideo(asset!);
   }
 
   initVideo(KaigaAsset asset) async {
@@ -69,28 +76,44 @@ class AssetViewerState extends State<AssetViewer> {
     controller!.setLooping(true);
     await controller!.initialize();
     setState(() {});
-    final volume = await volumeController.getVolume();
-    if (volume > 0.2) volumeController.setVolume(0.2, showSystemUI: false);
+
+    playTimer = Timer.periodic(const Duration(seconds: 1), alwaysPlay);
+
+    alwaysPlay(null);
+  }
+
+  alwaysPlay(Timer? _) async {
+    if (controller == null) return;
+    if (controller!.value.isPlaying) return;
     await controller!.play();
   }
 
+  void setAsset(KaigaAsset? asset) => setState(() => this.asset = asset);
+  void setFile(File? file) => setState(() => this.file = file);
+
   @override
-  Widget build(BuildContext context) => asset.isImage
-      ? imageView(asset)
-      : asset.isVideo
-          ? videoView
-          : loadingView;
+  Widget build(BuildContext context) => asset != null
+      ? asset!.isImage
+          ? imageView(asset!)
+          : asset!.isVideo
+              ? videoView
+              : loadingView
+      : loadingView;
 
   Widget get loadingView => const Center(
         child: CupertinoActivityIndicator(),
       );
 
   Widget imageView(KaigaAsset asset) => Center(
-        child: AssetEntityImage(
-          asset.entity,
-        ),
+        child: AssetEntityImage(asset.entity),
       );
 
-  Widget get videoView =>
-      controller != null ? VideoPlayer(controller!) : loadingView;
+  Widget get videoView => Center(
+        child: controller != null
+            ? AspectRatio(
+                aspectRatio: controller!.value.aspectRatio,
+                child: VideoPlayer(controller!),
+              )
+            : loadingView,
+      );
 }

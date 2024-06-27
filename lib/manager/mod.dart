@@ -13,6 +13,8 @@ class KaigaManager {
   final list = ValueNotifierList<KaigaAsset>([]);
 
   FutureOr init() async {
+    list.value = [];
+    albums.value = [];
     if (!(await _getPermission())) {
       await showAlert(
         title: "Permission Denied",
@@ -54,27 +56,8 @@ class KaigaManager {
     }
 
     list.value = items;
-
-    list.first.init();
   }
 
-  Future<bool> _getPermission() async {
-    final PermissionState ps = await PhotoManager.requestPermissionExtend();
-    return ps.isAuth;
-  }
-
-  KaigaAsset? getAsset(String id) {
-    final asset =
-        list.value.where((element) => element.entity.id == id).firstOrNull;
-    if (asset == null) return null;
-    return asset.init();
-  }
-
-  assetIndex(String id) =>
-      list.value.indexWhere((element) => element.entity.id == id);
-
-  messUpError() => showAlert(
-        title: "Error",
-        content: "Something weird happened, restart the app :sob:",
-      );
+  Future<bool> _getPermission() =>
+      PhotoManager.requestPermissionExtend().then((ps) => ps.isAuth);
 }

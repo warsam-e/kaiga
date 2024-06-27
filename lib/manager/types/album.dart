@@ -26,11 +26,11 @@ class KaigaAlbum {
     if (count > 0) {
       final list = await entity.getAssetListPaged(page: 0, size: count);
       final all = list.map(KaigaAsset.fromAsset).toList();
-      mainAsset = all.firstOrNull?.init();
       assets.addAll(all);
+      assets.sort(
+          (a, b) => b.entity.createDateTime.compareTo(a.entity.createDateTime));
+      mainAsset = await assets.firstOrNull?.init();
     }
-    assets.sort(
-        (a, b) => a.entity.createDateTime.compareTo(b.entity.createDateTime));
 
     return KaigaAlbum(
       name: entity.name,
@@ -44,7 +44,10 @@ class KaigaAlbum {
     final res = await PhotoManager.editor
         .copyAssetToPath(asset: asset.entity, pathEntity: entity);
     if (res == null) return;
-    mainAsset.value = KaigaAsset.fromAsset(res).init();
+    assets.add(KaigaAsset.fromAsset(res));
+    assets.sort(
+        (a, b) => b.entity.createDateTime.compareTo(a.entity.createDateTime));
+    mainAsset.value = await assets.firstOrNull?.init();
     manager.list.remove(asset);
   }
 }

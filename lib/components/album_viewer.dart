@@ -3,21 +3,18 @@ import 'package:flutter/services.dart';
 import 'package:kaiga/main.dart';
 
 class AlbumViewer extends StatefulWidget {
-  final List<KaigaAsset> all;
-  const AlbumViewer(this.all, {super.key});
+  const AlbumViewer({super.key});
 
   @override
   AlbumViewerState createState() => AlbumViewerState();
 }
 
 class AlbumViewerState extends State<AlbumViewer> {
-  List<KaigaAsset> get all => widget.all;
-
   final manager = KaigaManager();
 
   final showingControls = ValueNotifier(true);
 
-  KaigaAsset get currentAsset => all.first;
+  final currentAsset = ValueNotifier<KaigaAsset?>(null);
 
   EdgeInsets get viewPadding => MediaQuery.of(context).viewPadding;
   double get bottom => viewPadding.bottom;
@@ -25,6 +22,22 @@ class AlbumViewerState extends State<AlbumViewer> {
   @override
   void initState() {
     super.initState();
+    manager.list.addListener(init);
+    init();
+  }
+
+  @override
+  void dispose() {
+    manager.list.removeListener(init);
+    super.dispose();
+  }
+
+  init() async {
+    currentAsset.value = null;
+    if (manager.list.value.isEmpty) return;
+    // await Future.delayed(const Duration(milliseconds: 1000));
+    final item = await manager.list.value.first.init();
+    currentAsset.value = item;
   }
 
   toggleShowingControls() {

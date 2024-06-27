@@ -64,7 +64,7 @@ class KaigaAsset {
         isFavourite: ValueNotifier(asset.isFavorite),
       );
 
-  KaigaAsset init() {
+  Future<KaigaAsset> init() async {
     if (inited) return this;
     inited = true;
     assetFile.init();

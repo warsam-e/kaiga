@@ -31,18 +31,12 @@ class AppState extends State<App> {
   @override
   void initState() {
     super.initState();
-
     manager.init();
   }
 
   @override
-  Widget build(BuildContext context) => CupertinoApp(
+  Widget build(BuildContext context) => const CupertinoApp(
         theme: Consts.theme,
-        home: ListenableView(manager.list,
-            builder: (all) => all.isNotEmpty ? AlbumViewer(all) : loadingView),
-      );
-
-  Widget get loadingView => const Center(
-        child: CupertinoActivityIndicator(),
+        home: AlbumViewer(),
       );
 }
