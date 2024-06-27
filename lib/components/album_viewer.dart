@@ -14,6 +14,7 @@ class AlbumViewerState extends State<AlbumViewer> {
 
   final showingControls = ValueNotifier(true);
 
+  final currentAssetId = ValueNotifier<String?>(null);
   final currentAsset = ValueNotifier<KaigaAsset?>(null);
 
   EdgeInsets get viewPadding => MediaQuery.of(context).viewPadding;
@@ -35,7 +36,7 @@ class AlbumViewerState extends State<AlbumViewer> {
   init() async {
     currentAsset.value = null;
     if (manager.list.value.isEmpty) return;
-    // await Future.delayed(const Duration(milliseconds: 1000));
+
     final item = await manager.list.value.first.init();
     currentAsset.value = item;
   }

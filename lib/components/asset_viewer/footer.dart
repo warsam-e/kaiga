@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:kaiga/components/utils/disable_child.dart';
 import 'package:kaiga/main.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
@@ -19,7 +18,6 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
   final manager = KaigaManager();
 
   ValueNotifier<KaigaAsset?> get currentAsset => widget.asset;
-  KaigaAlbum? selectedAlbum;
 
   KaigaAsset? asset;
 
@@ -39,33 +37,22 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
 
   reset() {
     setAsset(null);
-    setSelectedAlbum(null);
   }
 
-  init() {
-    print("init");
+  init() async {
     reset();
     if (currentAsset.value == null) return;
     setAsset(currentAsset.value!);
-    print(["init footer", currentAsset.value?.id, manager.albums.value.length]);
   }
 
-  void setSelectedAlbum(KaigaAlbum? album) =>
-      setState(() => selectedAlbum = album);
   void setAsset(KaigaAsset? asset) => setState(() => this.asset = asset);
 
   EdgeInsets get viewPadding => MediaQuery.of(context).viewPadding;
   double get bottom => viewPadding.bottom;
 
   selectAlbum(KaigaAlbum album) {
-    if (album == selectedAlbum) return setSelectedAlbum(null);
-    setSelectedAlbum(album);
-  }
-
-  continueAction() {
-    if (asset != null && selectedAlbum == null) return;
-    selectedAlbum!.add(asset!);
-    reset();
+    if (asset == null) return;
+    album.add(asset!);
   }
 
   delete() async {
@@ -79,7 +66,7 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
     Color color = CupertinoColors.white,
   }) =>
       ButtonView(
-        Icon(icon, color: color, size: 35),
+        Icon(icon, color: color, size: 50),
         onPressed: onPressed,
       );
 
@@ -94,16 +81,15 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
         ),
         child: BlurView(
           child: Container(
-              height: 220,
-              padding:
-                  EdgeInsets.only(bottom: bottom, left: 20, right: 20, top: 20),
+              height: 230,
+              padding: EdgeInsets.only(bottom: bottom, top: 20),
               color: CupertinoColors.black.withOpacity(0.7),
               child: Column(
                 children: [
                   Expanded(
                     child: asset != null ? albumView(asset!) : const SizedBox(),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   actionRow,
                 ],
               )),
@@ -115,22 +101,21 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
         builder: (albums) => ListView(
           scrollDirection: Axis.horizontal,
           children: [
+            const SizedBox(width: 20),
             for (final album in albums) ...[
               ButtonView(
                 albumItemView(album),
                 onPressed: () => selectAlbum(album),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 20),
             ]
           ],
         ),
       );
 
   Widget albumItemView(KaigaAlbum album) {
-    final radius = BorderRadius.circular(15);
+    final radius = BorderRadius.circular(12);
     final placeholderImage = Container(
-      height: 80,
-      width: 80,
       decoration: BoxDecoration(
         color: CupertinoColors.white.withOpacity(0.2),
         borderRadius: radius,
@@ -140,7 +125,7 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
     final albumNameView = AutoSizeText(
       album.name,
       maxLines: 1,
-      minFontSize: 10,
+      minFontSize: 12,
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
           fontSize: 12,
@@ -158,27 +143,20 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
           ),
         );
 
-    final albumCoverView = Container(
-        decoration: album == selectedAlbum
-            ? BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: CupertinoColors.activeBlue, width: 3),
-              )
-            : null,
-        child: ListenableView(
-          album.mainAsset,
-          builder: (mainAsset) => mainAsset != null
-              ? ListenableView(
-                  mainAsset.assetFile.file,
-                  builder: (file) => file != null
-                      ? albumCoverFileView(file)
-                      : placeholderImage,
-                )
-              : placeholderImage,
-        ));
+    final albumCoverView = ListenableView(
+      album.mainAsset,
+      builder: (mainAsset) => mainAsset != null
+          ? ListenableView(
+              mainAsset.assetFile.file,
+              builder: (file) =>
+                  file != null ? albumCoverFileView(file) : placeholderImage,
+            )
+          : placeholderImage,
+    );
 
     return SizedBox(
-      width: 90,
+      height: 110,
+      width: 80,
       child: Column(
         children: [
           albumNameView,
@@ -193,11 +171,11 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
 
   Widget get actionRow => Row(
         crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           favouriteButton,
+          const SizedBox(width: 40),
           deleteButton,
-          continueButton,
         ],
       );
 
@@ -217,11 +195,4 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
         Symbols.delete_rounded,
         onPressed: delete,
       );
-
-  Widget get continueButton => DisableChild(
-      footerActionButton(
-        Symbols.check_rounded,
-        onPressed: continueAction,
-      ),
-      disable: selectedAlbum == null);
 }

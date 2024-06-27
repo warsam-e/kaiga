@@ -77,7 +77,7 @@ class AssetViewerNavState extends State<AssetViewerNav> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [titleView(asset!, stat!), refreshView],
                 )
-              : loadingView,
+              : const SizedBox(),
         ),
       );
 
@@ -119,8 +119,6 @@ class AssetViewerNavState extends State<AssetViewerNav> {
       ],
     );
   }
-
-  Widget get loadingView => const Center(child: CupertinoActivityIndicator());
 
   Widget get refreshView => ButtonView(
         const Icon(
