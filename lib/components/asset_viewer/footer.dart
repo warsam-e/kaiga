@@ -2,10 +2,11 @@ import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:kaiga/components/utils/disable_child.dart';
 import 'package:kaiga/main.dart';
 
 class AssetViewerFooter extends StatefulWidget {
-  final ValueNotifier<KaigaAsset?> asset;
+  final KaigaAsset asset;
   const AssetViewerFooter(this.asset, {super.key});
 
   @override
@@ -15,10 +16,33 @@ class AssetViewerFooter extends StatefulWidget {
 class AssetViewerFooterState extends State<AssetViewerFooter> {
   final manager = KaigaManager();
 
-  ValueNotifier<KaigaAsset?> get asset => widget.asset;
+  KaigaAsset get asset => widget.asset;
+  KaigaAlbum? selectedAlbum;
+
+  reset() {
+    setSelectedAlbum(null);
+  }
+
+  void setSelectedAlbum(KaigaAlbum? album) =>
+      setState(() => selectedAlbum = album);
 
   EdgeInsets get viewPadding => MediaQuery.of(context).viewPadding;
   double get bottom => viewPadding.bottom;
+
+  selectAlbum(KaigaAlbum album) {
+    if (album == selectedAlbum) return setSelectedAlbum(null);
+    setSelectedAlbum(album);
+  }
+
+  continueAction() {
+    if (selectedAlbum == null) return;
+    selectedAlbum!.add(asset);
+    reset();
+  }
+
+  delete() async {
+    if (await asset.delete()) reset();
+  }
 
   ButtonView footerActionButton(
     IconData icon, {
@@ -38,25 +62,19 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
         ),
         child: BlurView(
           child: Container(
-            height: 200,
-            padding:
-                EdgeInsets.only(bottom: bottom, left: 20, right: 20, top: 20),
-            color: CupertinoColors.black.withOpacity(0.7),
-            child: ListenableView(
-              asset,
-              builder: (a) => a != null
-                  ? Column(
-                      children: [
-                        Expanded(
-                          child: albumView(a),
-                        ),
-                        const SizedBox(height: 10),
-                        actionRow(a),
-                      ],
-                    )
-                  : const SizedBox(),
-            ),
-          ),
+              height: 220,
+              padding:
+                  EdgeInsets.only(bottom: bottom, left: 20, right: 20, top: 20),
+              color: CupertinoColors.black.withOpacity(0.7),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: albumView(asset),
+                  ),
+                  const SizedBox(height: 20),
+                  actionRow,
+                ],
+              )),
         ),
       );
 
@@ -68,7 +86,7 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
             for (final album in albums) ...[
               ButtonView(
                 albumItemView(album),
-                onPressed: () => asset.addToAlbum(album),
+                onPressed: () => selectAlbum(album),
               ),
               const SizedBox(width: 10),
             ]
@@ -98,7 +116,7 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
           color: CupertinoColors.white),
     );
 
-    Widget albumCoverView(File file) => Container(
+    Widget albumCoverFileView(File file) => Container(
           decoration: BoxDecoration(
             borderRadius: radius,
             image: DecorationImage(
@@ -108,41 +126,51 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
           ),
         );
 
+    final albumCoverView = Container(
+        decoration: album == selectedAlbum
+            ? BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: CupertinoColors.activeBlue, width: 3),
+              )
+            : null,
+        child: ListenableView(
+          album.mainAsset,
+          builder: (mainAsset) => mainAsset != null
+              ? ListenableView(
+                  mainAsset.assetFile.file,
+                  builder: (file) => file != null
+                      ? albumCoverFileView(file)
+                      : placeholderImage,
+                )
+              : placeholderImage,
+        ));
+
     return SizedBox(
-      width: 80,
+      width: 90,
       child: Column(
         children: [
           albumNameView,
           const SizedBox(height: 5),
-          ...album.mainAsset != null
-              ? [
-                  Expanded(
-                    child: ListenableView(
-                      album.mainAsset!.file,
-                      builder: (file) => file != null
-                          ? albumCoverView(file.file)
-                          : placeholderImage,
-                    ),
-                  )
-                ]
-              : [placeholderImage],
+          Expanded(
+            child: albumCoverView,
+          ),
         ],
       ),
     );
   }
 
-  Widget actionRow(KaigaAsset asset) => Row(
+  Widget get actionRow => Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          favouriteButton(asset),
-          deleteButton(asset),
+          favouriteButton,
+          deleteButton,
           const KaigaFilter(),
-          keepButton,
+          continueButton,
         ],
       );
 
-  Widget favouriteButton(KaigaAsset asset) => ListenableView(
+  Widget get favouriteButton => ListenableView(
         asset.isFavourite,
         builder: (isFavourite) => footerActionButton(
           isFavourite ? CupertinoIcons.heart_fill : CupertinoIcons.heart,
@@ -152,13 +180,15 @@ class AssetViewerFooterState extends State<AssetViewerFooter> {
         ),
       );
 
-  Widget deleteButton(KaigaAsset asset) => footerActionButton(
+  Widget get deleteButton => footerActionButton(
         CupertinoIcons.trash,
-        onPressed: asset.delete,
+        onPressed: delete,
       );
 
-  Widget get keepButton => footerActionButton(
+  Widget get continueButton => DisableChild(
+      footerActionButton(
         CupertinoIcons.checkmark_alt,
-        onPressed: manager.next,
-      );
+        onPressed: continueAction,
+      ),
+      disable: selectedAlbum == null);
 }

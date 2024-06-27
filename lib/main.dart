@@ -38,7 +38,7 @@ class AppState extends State<App> {
   @override
   Widget build(BuildContext context) => CupertinoApp(
         theme: Consts.theme,
-        home: ListenableView(manager.all,
+        home: ListenableView(manager.list,
             builder: (all) => all.isNotEmpty ? AlbumViewer(all) : loadingView),
       );
 

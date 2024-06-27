@@ -5,19 +5,29 @@ import 'package:kaiga/main.dart';
 import 'package:photo_manager/photo_manager.dart';
 
 class KaigaAssetFile {
-  final File file;
-  final FileStat stat;
+  final AssetEntity entity;
+  final ValueNotifier<File?> file;
+  final ValueNotifier<FileStat?> stat;
 
-  KaigaAssetFile(this.file, this.stat);
+  KaigaAssetFile({
+    required this.entity,
+    required this.file,
+    required this.stat,
+  });
 
-  static Future<KaigaAssetFile?> fromAsset(AssetEntity? asset) async {
-    if (asset == null) return null;
-    final file = await asset.file;
-    if (file == null) return null;
+  factory KaigaAssetFile.fromAsset(AssetEntity asset) => KaigaAssetFile(
+        entity: asset,
+        file: ValueNotifier(null),
+        stat: ValueNotifier(null),
+      );
 
-    final stat = await file.stat();
-
-    return KaigaAssetFile(file, stat);
+  KaigaAssetFile init() {
+    entity.file.then((f) {
+      if (f == null) return;
+      file.value = f;
+      f.stat().then((s) => stat.value = s);
+    });
+    return this;
   }
 
   @override
@@ -28,8 +38,9 @@ class KaigaAssetFile {
 }
 
 class KaigaAsset {
+  final String id;
   AssetEntity entity;
-  final ValueNotifier<KaigaAssetFile?> file;
+  final KaigaAssetFile assetFile;
   final ValueNotifier<bool> isFavourite;
 
   KaigaManager get manager => KaigaManager();
@@ -37,8 +48,9 @@ class KaigaAsset {
   bool inited = false;
 
   KaigaAsset({
+    required this.id,
     required this.entity,
-    required this.file,
+    required this.assetFile,
     required this.isFavourite,
   });
 
@@ -46,15 +58,16 @@ class KaigaAsset {
   bool get isVideo => entity.type == AssetType.video;
 
   factory KaigaAsset.fromAsset(AssetEntity asset) => KaigaAsset(
+        id: asset.id,
         entity: asset,
-        file: ValueNotifier(null),
+        assetFile: KaigaAssetFile.fromAsset(asset),
         isFavourite: ValueNotifier(asset.isFavorite),
       );
 
   KaigaAsset init() {
     if (inited) return this;
     inited = true;
-    KaigaAssetFile.fromAsset(entity).then((f) => file.value = f);
+    assetFile.init();
     return this;
   }
 
@@ -70,25 +83,19 @@ class KaigaAsset {
     return _updateEntity(res);
   }
 
-  Future delete() async {
+  Future<bool> delete() async {
     if (await PhotoManager.plugin.deleteWithId(entity.id)) {
-      manager.next();
-      manager.all.remove(this);
+      manager.list.remove(this);
+      return true;
     }
-  }
-
-  Future addToAlbum(KaigaAlbum album) async {
-    final res = await PhotoManager.editor
-        .copyAssetToPath(asset: entity, pathEntity: album.entity);
-    if (res == null) return;
-    await manager.initAlbums();
-    return _updateEntity(res);
+    return false;
   }
 
   @override
   String toString() => "KaigaAsset(\n"
+      "  id: $id,\n"
       "  entity: $entity,\n"
-      "  file: ${file.value},\n"
+      "  assetFile: $assetFile,\n"
       "  isFavourite: ${isFavourite.value},\n"
       ")";
 }

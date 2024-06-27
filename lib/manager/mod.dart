@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:flutter/cupertino.dart';
 import 'package:kaiga/main.dart';
 import 'package:photo_manager/photo_manager.dart';
 
@@ -11,8 +10,7 @@ class KaigaManager {
   factory KaigaManager() => manager;
   KaigaManager._internal();
   final albums = ValueNotifierList<KaigaAlbum>([]);
-  final all = ValueNotifierList<KaigaAsset>([]);
-  final currentAssetId = ValueNotifier<String?>(null);
+  final list = ValueNotifierList<KaigaAsset>([]);
 
   FutureOr init() async {
     if (!(await _getPermission())) {
@@ -24,10 +22,11 @@ class KaigaManager {
       return PhotoManager.openSetting();
     }
     await initAlbums();
-    await _initAll();
+    await initList();
   }
 
   initAlbums() async {
+    albums.value = [];
     final allAlbums = await PhotoManager.getAssetPathList(
       pathFilterOption: const PMPathFilter(
         darwin: PMDarwinPathFilter(type: [PMDarwinAssetCollectionType.album]),
@@ -38,13 +37,25 @@ class KaigaManager {
         await Future.wait(allAlbums.map(KaigaAlbum.fromEntity).toList());
   }
 
-  _initAll() async {
+  initList() async {
+    list.value = [];
     final count = await PhotoManager.getAssetCount();
     final allAssets =
         await PhotoManager.getAssetListPaged(page: 0, pageCount: count);
     if (allAssets.isEmpty) return;
-    currentAssetId.value = allAssets.first.id;
-    all.value = allAssets.map(KaigaAsset.fromAsset).toList();
+    final all = allAssets.map(KaigaAsset.fromAsset).toList();
+
+    final items = <KaigaAsset>[];
+
+    for (final asset in all) {
+      final inAlbum =
+          albums.value.any((a) => a.assets.any((b) => b.id == asset.id));
+      if (!inAlbum) items.add(asset);
+    }
+
+    list.value = items;
+
+    list.first.init();
   }
 
   Future<bool> _getPermission() async {
@@ -54,52 +65,16 @@ class KaigaManager {
 
   KaigaAsset? getAsset(String id) {
     final asset =
-        all.value.where((element) => element.entity.id == id).firstOrNull;
+        list.value.where((element) => element.entity.id == id).firstOrNull;
     if (asset == null) return null;
     return asset.init();
   }
 
-  next() {
-    final current = currentAssetId.value;
-    if (current == null) return;
-    final index =
-        all.value.indexWhere((element) => element.entity.id == current);
-    if (index == -1) {
-      return showAlert(
+  assetIndex(String id) =>
+      list.value.indexWhere((element) => element.entity.id == id);
+
+  messUpError() => showAlert(
         title: "Error",
         content: "Something weird happened, restart the app :sob:",
       );
-    }
-
-    final nextIndex = index + 1;
-    if (nextIndex >= all.value.length) {
-      return showAlert(
-        title: "End of List",
-        content: "You have reached the end of the list",
-      );
-    }
-    currentAssetId.value = all.value[nextIndex].entity.id;
-  }
-
-  previous() {
-    final current = currentAssetId.value;
-    if (current == null) return;
-    final index =
-        all.value.indexWhere((element) => element.entity.id == current);
-    if (index == -1) {
-      return showAlert(
-        title: "Error",
-        content: "Something weird happened, restart the app :sob:",
-      );
-    }
-
-    final nextIndex = index - 1;
-    if (nextIndex < 0) {
-      return showAlert(
-        title: "Nothing else before this!",
-        content: "You have reached the beginning of the list",
-      );
-    }
-    currentAssetId.value = all.value[nextIndex].entity.id;
-  }
 }
