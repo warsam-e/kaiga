@@ -1,16 +1,42 @@
-# kaiga
+# Kaiga
 
-A new Flutter project.
+**Kaiga** is an iOS app built with Flutter that simplifies the process of organizing your camera roll. With Kaiga, you can quickly manage your photos by either adding them to albums or deleting them with a single tap.
 
-## Getting Started
+## Features
 
-This project is a starting point for a Flutter application.
+- **Organize with Ease**: Tap an album to sort photos in your camera roll.
+- **Quick Deletions**: Delete unwanted images right from the main screen.
+- **User-Friendly Interface**: A clean, intuitive design that makes photo organization fast and effortless.
 
-A few resources to get you started if this is your first Flutter project:
+## Screenshots
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+<img src="misc/screenshot.jpeg" width="320" />
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## Installation
+
+To run Kaiga locally, follow these steps:
+
+1. Clone the repo:
+   ```bash
+   git clone https://github.com/warsam-e/kaiga.git
+    ```
+2. Navigate to the project directory:
+    ```bash
+    cd kaiga
+    ```
+3. Install the dependencies:
+    ```bash
+    flutter pub get
+    ```
+4. Run the app:
+    ```bash
+    flutter run
+    ```
+
+## Requirements
+- iOS 11.0 or later
+- Flutter SDK 3.4.3 or later
+
+## Contributions 
+Feel free to fork the repository and submit pull requests! If you encounter any issues or have feature requests, please open an issue.
+
