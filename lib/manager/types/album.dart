@@ -43,7 +43,6 @@ class KaigaAlbum {
   add(KaigaAsset asset) async {
     final res = await PhotoManager.editor
         .copyAssetToPath(asset: asset.entity, pathEntity: entity);
-    if (res == null) return;
     assets.add(KaigaAsset.fromAsset(res));
     assets.sort(
         (a, b) => b.entity.createDateTime.compareTo(a.entity.createDateTime));

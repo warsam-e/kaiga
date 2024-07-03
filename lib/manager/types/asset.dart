@@ -79,7 +79,6 @@ class KaigaAsset {
   Future favourite() async {
     final res = await PhotoManager.editor.darwin
         .favoriteAsset(entity: entity, favorite: !entity.isFavorite);
-    if (res == null) return;
     return _updateEntity(res);
   }
 

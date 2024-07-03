@@ -55,7 +55,7 @@ class KaigaManager {
       if (!inAlbum) items.add(asset);
     }
 
-    list.value = items;
+    list.value = items.reversed.toList();
   }
 
   Future<bool> _getPermission() =>
