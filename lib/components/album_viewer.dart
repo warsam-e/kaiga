@@ -2,6 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:kaiga/main.dart';
 
+/// The AlbumViewer class is a Flutter widget that displays an album in the Kaiga app.
+///
+/// This handles the display of the albums, the navigation and footer controls.
 class AlbumViewer extends StatefulWidget {
   const AlbumViewer({super.key});
 

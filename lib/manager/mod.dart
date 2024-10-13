@@ -5,6 +5,11 @@ import 'package:photo_manager/photo_manager.dart';
 export 'value_notifier_list.dart';
 export 'types/mod.dart';
 
+/// The KaigaManager class is a singleton that manages the state of the Kaiga app.
+///
+/// It has a list of albums and a list of assets, and it initializes them when the app starts.
+///
+/// It also has a method to get the permission to access the user's photos.
 class KaigaManager {
   static final KaigaManager manager = KaigaManager._internal();
   factory KaigaManager() => manager;

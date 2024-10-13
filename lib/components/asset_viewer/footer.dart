@@ -6,6 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:kaiga/main.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+/// The footer portion of the AssetViewer widget in the Kaiga app.
+///
+/// This handles the display of the album selection, the favourite and delete buttons.
 class AssetViewerFooter extends StatefulWidget {
   final ValueNotifier<KaigaAsset?> asset;
   const AssetViewerFooter(this.asset, {super.key});

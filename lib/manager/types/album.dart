@@ -2,6 +2,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:kaiga/main.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+/// The KaigaAlbum class represents an album in the Kaiga app.
+///
+/// It has a name, an entity, a list of assets, and a main asset.
+///
+/// It is initialized from an existing entity.
 class KaigaAlbum {
   final String name;
   final AssetPathEntity entity;

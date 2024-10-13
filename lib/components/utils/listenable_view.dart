@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 
+/// A widget that listens to a ValueListenable and rebuilds when the value
+/// changes.
 class ListenableView<T> extends StatelessWidget {
   final ValueListenable<T> valueListenable;
   final Widget Function(T value) builder;

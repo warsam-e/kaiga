@@ -4,6 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:kaiga/main.dart';
 import 'package:photo_manager/photo_manager.dart';
 
+/// The KaigaAssetFile class represents a file in the Kaiga app.
+///
+/// It has an entity, a file, and a stat.
 class KaigaAssetFile {
   final AssetEntity entity;
   final ValueNotifier<File?> file;
@@ -37,6 +40,11 @@ class KaigaAssetFile {
       ")";
 }
 
+/// The KaigaAsset class represents an asset in the Kaiga app.
+///
+/// It has an id, an entity, an asset file, and a favourite status.
+///
+/// It has a method to favourite the asset and a method to delete the asset.
 class KaigaAsset {
   final String id;
   AssetEntity entity;

@@ -1,10 +1,8 @@
 import 'package:flutter/foundation.dart';
 
-/*
-  ValueNotifierList<T> is a class that extends ChangeNotifier and implements ValueListenable<List<T>>.
-
-  It's like ValueNotifier<T> but for lists, it has the same methods as a List<T> and it notifies listeners when the list changes.
-*/
+/// ValueNotifierList<T> is a class that extends ChangeNotifier and implements ValueListenable<List<T>>.
+///
+/// It's like ValueNotifier<T> but for lists, it has the same methods as a List<T> and it notifies listeners when the list changes.
 class ValueNotifierList<T> extends ChangeNotifier
     implements ValueListenable<List<T>> {
   final List<T> _value;

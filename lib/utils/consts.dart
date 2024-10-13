@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+/// The Consts class contains constants used throughout the app.
+/// Stuff like colors, text styles, and themes.
 abstract class Consts {
   static const primaryColor = Color.fromARGB(255, 47, 131, 249);
 

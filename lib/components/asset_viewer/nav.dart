@@ -7,6 +7,9 @@ import 'package:kaiga/main.dart';
 import 'package:kaiga/manager/format_bytes.dart';
 import 'package:material_symbols_icons/symbols.dart';
 
+/// The navigation bar at the top of the AssetViewer widget.
+///
+/// This handles the display of the asset information and the refresh button.
 class AssetViewerNav extends StatefulWidget {
   final ValueNotifier<KaigaAsset?> asset;
   const AssetViewerNav(this.asset, {super.key});

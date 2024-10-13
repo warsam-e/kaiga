@@ -10,6 +10,11 @@ import 'package:volume_controller/volume_controller.dart';
 export 'nav.dart';
 export 'footer.dart';
 
+/// The AssetViewer widget in the Kaiga app.
+///
+/// This widget displays an asset in the Kaiga app.
+///
+/// It handles the display of the asset, the image and video views.
 class AssetViewer extends StatefulWidget {
   final ValueNotifier<KaigaAsset?> asset;
   const AssetViewer(this.asset, {super.key});

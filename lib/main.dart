@@ -18,6 +18,11 @@ Future initApp() async {
       overlays: SystemUiOverlay.values);
 }
 
+/// The main Kaiga app widget.
+/// This view isn't tampered with directly, but is the root of the Kaiga app.
+/// Since Kaiga is a photo and video viewer, it doesn't necessarily need tabs
+/// or much navigation.
+/// It's a simple app that displays media files from the device.
 class App extends StatefulWidget {
   const App({super.key});
 

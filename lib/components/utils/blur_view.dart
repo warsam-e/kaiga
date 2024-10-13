@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/cupertino.dart';
 
+/// Adds a blur effect to the child widget.
 class BlurView extends StatelessWidget {
   final Widget child;
   const BlurView({required this.child, super.key});

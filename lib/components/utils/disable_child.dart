@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
+/// A widget that disables a child widget by changing its opacity and ignoring
+/// pointer events.
 class DisableChild extends StatelessWidget {
   final Widget child;
   final bool disable;
