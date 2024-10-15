@@ -10,7 +10,11 @@
 
 ## Screenshots
 
-<img src="misc/screenshot.jpeg" width="320" />
+| Screenshot 1 | Screenshot 2 |
+| --- | --- |
+| ![1](misc/s1.jpeg) | ![2](misc/s2.jpeg) |
+
+<!-- ![1](misc/s1.jpeg) ![2](misc/s2.jpeg) -->
 
 ## Installation
 
